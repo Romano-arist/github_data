@@ -148,19 +148,20 @@ class GitHubUploadToS3Service:
 
             except (RateLimitExceededException, requests.exceptions.RetryError) as rex:
                 if isinstance(rex, RateLimitExceededException):
-                    logger.warning(f"Rate limit exceeded for GitHub API: {rex}")
+                    logger.warning(f"Rate limit exceeded for GitHub API: {rex}, repository ID: {repository.id}")
                 else:
-                    logger.warning(f"Retry error: {rex}")
+                    logger.warning(f"Retry error: {rex}, repository ID: {repository.id}")
                 with self.__service_lock:
                     self._attempts -= 1
                     if self._attempts <= 0:
-                        logger.error("Max attempts reached. Exiting.")
+                        logger.error(f"Max attempts reached. Exiting, repository ID: {repository.id}")
                         raise rex
-                    logger.info("Rate limit exceeded for GitHub API. Trying to switch to another token.")
+                    logger.info(f"Rate limit exceeded for GitHub API. "
+                                f"Trying to switch to another token, repository ID: {repository.id}")
                     limit = github_client.get_rate_limit().core.remaining
                     if limit <= 0:
                         if len(self.__github_api_tokens) == 0:
-                            logger.error("No more tokens available.")
+                            logger.error(f"No more tokens available, repository ID: {repository.id}")
                             raise
                         self.__github_api_tokens.append(self.__current_token)
                         self.__current_token = self.__github_api_tokens.pop(0)
