@@ -3,6 +3,8 @@ This project is designed to incrementally export commit data from GitHub reposit
 The core idea is to treat repositories as the central unit for data extraction.
 
 ## Agenda
+- **Future queries**: The system is designed to support future queries on commit data for ML purposes. I assumed that queries will be
+  performed on the commit data, not on the repository metadata.
 - **Repositories as the core entity**: The system is designed around GitHub repositories as the main tracked entities, enabling regular monitoring and commit extraction.
 - **Data schema**: The schema is organized into four logical tables:
   - repositories
@@ -22,6 +24,14 @@ the commit-related tables are written in partitions by repositories_id and commi
 - **Metadata decoupling**: Separate metadata about the latest processed commits from the repository records to reduce redundancy and avoid tight bounds. Consider storing such metadata in a relational database. 
 - **De-duplication at write-time**: Introduce processing engines like Spark to prevent duplicates when writing new data.
 
+
+> **Design note**:  
+> The current partitioning strategy assumes that most queries will be scoped by specific repositories - for example,
+> to trace commit history or reconstruct repository state over time.  
+> Therefore, `repository_id` is used as the primary partition key.  
+>  
+> If most queries are expected to be time-based (e.g., filtering commits by date across many repositories),  
+> it would make sense to revise the schema and switch to partitioning by commit timestamp instead.
 
 # Data schema
 ### Repositories

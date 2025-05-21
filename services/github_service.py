@@ -29,7 +29,7 @@ class GitHubUploadToS3Service:
         )
         self.__service_lock = Lock()
         self.__current_token = None
-        self._attempts = len(github_api_tokens) * 2
+        self._attempts = len(github_api_tokens) * 1
 
     def init_repositories_upload_by_stars(self, start_ts: datetime, stop_ts: datetime,
                                           ts_delta: timedelta, stars_count: int = 100,

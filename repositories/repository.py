@@ -377,7 +377,7 @@ class GitHubCommits(ApiRepository):
             ghcs = GitHubCommitSchema(
                 repository_id=repository_id,
                 commit_sha=commit.sha,
-                commit_author_id=commit.author.id if commit.author else None,
+                commit_author_id=commit.author.id if commit.author else -1,
                 commit_at=commit.commit.committer.date,
                 commit_message=commit.commit.message,
                 num_files_changed=len(files),

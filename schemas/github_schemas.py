@@ -70,7 +70,7 @@ class GitHubCommitFileStates(BaseModel):
 class GitHubCommitSchema(BaseModel):
     repository_id: int = Field(description="Repository ID")
     commit_sha: str = Field(min_length=40, max_length=40, description="Commit SHA")
-    commit_author_id: int | None = Field(description="Commit author ID")
+    commit_author_id: int = Field(description="Commit author ID")
     commit_at: datetime = Field(description="Commit datetime")
     commit_message: str = Field(min_length=1, description="Commit message")
     num_files_changed: int = Field(ge=0, description="Number of files changed")

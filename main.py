@@ -75,9 +75,9 @@ def main(
 
 if __name__ == '__main__':
     tokens = {
-        "token_1": "repositories_0",
-        "token_2": "repositories_0",
-        "token_3": "repositories_0",
+        "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": "repositories_0",
+        "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": "repositories_0",
+        "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": "repositories_0",
     }
     snapshot_ts = datetime(2024, 11, 1)
     s3 = get_s3_client()
