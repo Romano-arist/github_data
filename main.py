@@ -75,23 +75,23 @@ def main(
 
 if __name__ == '__main__':
     tokens = {
-        "token_hash_1": "repositories_0",
-        "token_hash_2": "repositories_0",
-        "token_hash_3": "repositories_0",
+        "token_1": "repositories_0",
+        "token_2": "repositories_0",
+        "token_3": "repositories_0",
     }
     snapshot_ts = datetime(2024, 11, 1)
     s3 = get_s3_client()
 
-    # init_repositories_upload_by_stars(
-    #     github_api_tokens=tokens,
-    #     snapshot_datetime=snapshot_ts,
-    #     s3_client=s3,
-    #     start_ts=datetime(2023, 11, 1),
-    #     stop_ts=datetime(2025, 5, 20),
-    #     ts_delta=timedelta(days=3),
-    #     stars_count=100,
-    #     repositories_per_file_threshold=1000
-    # )
+    init_repositories_upload_by_stars(
+        github_api_tokens=tokens,
+        snapshot_datetime=snapshot_ts,
+        s3_client=s3,
+        start_ts=datetime(2023, 11, 1),
+        stop_ts=datetime(2025, 5, 20),
+        ts_delta=timedelta(days=3),
+        stars_count=100,
+        repositories_per_file_threshold=1000
+    )
 
     main(
         github_api_tokens=tokens,

@@ -1,3 +1,4 @@
+import time
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from datetime import datetime, timezone, timedelta
@@ -28,7 +29,7 @@ class GitHubUploadToS3Service:
         )
         self.__service_lock = Lock()
         self.__current_token = None
-        self._attempts = len(github_api_tokens) * 4
+        self._attempts = len(github_api_tokens) * 2
 
     def init_repositories_upload_by_stars(self, start_ts: datetime, stop_ts: datetime,
                                           ts_delta: timedelta, stars_count: int = 100,
@@ -71,9 +72,9 @@ class GitHubUploadToS3Service:
         github_repo_df["last_commit_at"] = github_repo_df["last_commit_at"].fillna(
             pd.Timestamp("1970-01-01", tz="UTC")
         )
-        # Getting repositories with last commit after snapshot datetime or without commit datetime
+        # Getting repositories with last commit before snapshot datetime or without commit datetime
         filtered_github_repo_df = github_repo_df[
-            (github_repo_df["last_commit_at"] >= self.snapshot_datetime) | (
+            (github_repo_df["last_commit_at"] <= self.snapshot_datetime) | (
                 github_repo_df["last_commit_sha"].isna())
             ]
         filtered_github_repo_df = filtered_github_repo_df.sort_values(by="last_commit_at")
@@ -114,6 +115,7 @@ class GitHubUploadToS3Service:
         """
         Fetch increment data for a single repository and save it to S3.
         """
+        attempts = self._attempts
         while True:
             try:
                 # Loading and save commits
@@ -152,9 +154,14 @@ class GitHubUploadToS3Service:
                 else:
                     logger.warning(f"Retry error: {rex}, repository ID: {repository.id}")
                 with self.__service_lock:
-                    self._attempts -= 1
-                    if self._attempts <= 0:
+                    attempts -= 1
+                    if attempts <= 0:
                         logger.error(f"Max attempts reached. Exiting, repository ID: {repository.id}")
+                        # Although trying to switch token for the next repo uploading
+                        self.__github_api_tokens.append(self.__current_token)
+                        self.__current_token = self.__github_api_tokens.pop(0)
+                        github_client = Github(self.__current_token.token, retry=self.retry)
+                        time.sleep(60) # wait for 60 seconds before the next repo uploading
                         raise rex
                     logger.info(f"Rate limit exceeded for GitHub API. "
                                 f"Trying to switch to another token, repository ID: {repository.id}")
@@ -166,7 +173,7 @@ class GitHubUploadToS3Service:
                         self.__github_api_tokens.append(self.__current_token)
                         self.__current_token = self.__github_api_tokens.pop(0)
                         github_client = Github(self.__current_token.token, retry=self.retry)
-                        logger.info(f"Switched to token {self.__current_token.token}")
+                        logger.info(f"Switched to token {self.__current_token.token[0:8]}")
             except Exception as ex:
                 logger.error(f"Error fetching data for repository {repository.id}: {ex}")
                 raise ex

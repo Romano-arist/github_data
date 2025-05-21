@@ -3,11 +3,7 @@ This DAG uploads git data to S3.
 NOT TESTED, MORE LIKE A TEMPLATE.
 """
 import json
-import logging
-import time
 from datetime import datetime as dt, timedelta
-from typing import Sequence
-import os
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
